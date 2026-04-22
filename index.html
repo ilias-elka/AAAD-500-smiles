@@ -178,6 +178,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+window.addEventListener('error', (e) => {
+  setHomeError(e.message);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  setHomeError(String(e.reason?.message || e.reason));
+});
+
 const QUESTION_TIME = 20;
 const SHAPES = ['▲','◆','●','■'];
 
@@ -256,7 +264,12 @@ function playersRef(){ return ref(db, `rooms/${roomCode}/players`); }
 function playerRef(){ return ref(db, `rooms/${roomCode}/players/${playerId}`); }
 function stateRef(){ return ref(db, `rooms/${roomCode}/state`); }
 
-function setHomeError(msg){  els.homeError.textContent = msg;  els.homeError.style.color = '#ff4d6d';  els.homeError.style.fontWeight = '800';}
+function setHomeError(msg){
+  els.homeError.textContent = msg;
+  els.homeError.style.color = '#ff4d6d';
+  els.homeError.style.fontWeight = '800';
+  console.error(msg);
+}
 
 function renderLobbyHeader(){
   els.roomCodeLabel.textContent = roomCode;
@@ -395,21 +408,16 @@ async function createRoom(){
     });
 
     startListeners();
-show('lobby');
-renderLobbyHeader();
+    show('lobby');
+    renderLobbyHeader();
 
-try {
-  await onDisconnect(playerRef()).remove();
-} catch (err) {
-  console.error(err);
-}
+    try {
+      await onDisconnect(playerRef()).remove();
+    } catch (err) {
+      console.error(err);
+    }
   } catch (err) {
-    function setHomeError(msg){
-  els.homeError.textContent = msg;
-  els.homeError.style.color = '#ff4d6d';
-  els.homeError.style.fontWeight = '800';
-  console.error(msg);
-}
+    setHomeError(String(err?.message || err));
   }
 }
 
@@ -452,10 +460,15 @@ async function joinRoom(){
       isHost: false
     });
 
-    await onDisconnect(playerRef()).remove();
     startListeners();
     renderLobbyHeader();
     show(room?.state?.started ? 'game' : 'lobby');
+
+    try {
+      await onDisconnect(playerRef()).remove();
+    } catch (err) {
+      console.error(err);
+    }
   } catch (err) {
     setHomeError(String(err?.message || err));
   }
