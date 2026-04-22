@@ -165,3 +165,45 @@
       push,
       onDisconnect
     } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+    // Import the functions you need from the SDKs you need
+ 
+import { initializeApp } from "firebase/app";
+ 
+import { getAnalytics } from "firebase/analytics";
+ 
+// TODO: Add SDKs for Firebase products that you want to use
+ 
+// https://firebase.google.com/docs/web/setup#available-libraries
+ 
+ 
+// Your web app's Firebase configuration
+ 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+ 
+const firebaseConfig = {
+ 
+  apiKey: "AIzaSyAU68OEwUfhck-R5VbXdGZWNMswOuIvFY4",
+ 
+  authDomain: "aaad-500-smiles.firebaseapp.com",
+ 
+  databaseURL: "https://aaad-500-smiles-default-rtdb.europe-west1.firebasedatabase.app",
+ 
+  projectId: "aaad-500-smiles",
+ 
+  storageBucket: "aaad-500-smiles.firebasestorage.app",
+ 
+  messagingSenderId: "92914278254",
+ 
+  appId: "1:92914278254:web:92aaed0871a91b45bb2b7f",
+ 
+  measurementId: "G-D43ZC06MDZ"
+ 
+};
+ 
+ 
+// Initialize Firebase
+ 
+const app = initializeApp(firebaseConfig);
+ 
+const analytics = getAnalytics(app);
