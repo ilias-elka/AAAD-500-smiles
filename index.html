@@ -154,3 +154,30 @@
 
   <script type="module">
     
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getDatabase,
+    ref,
+    set,
+    get,
+    update,
+    remove,
+    onValue,
+    push,
+    onDisconnect
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAU68OEwUfhck-R5VbXdGZWNMswOuIvFY4",
+    authDomain: "aaad-500-smiles.firebaseapp.com",
+    databaseURL: "https://aaad-500-smiles-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "aaad-500-smiles",
+    storageBucket: "aaad-500-smiles.firebasestorage.app",
+    messagingSenderId: "92914278254",
+    appId: "1:92914278254:web:92aaed0871a91b45bb2b7f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
