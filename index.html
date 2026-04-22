@@ -1,425 +1,167 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📱 Sociaal Media Quiz</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
-<style>
-:root{ --bg:#0f0230; --card:#1a0550; --gold:#ffd700; --accent:#ff6b35; }
-*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body{ font-family:'Nunito',sans-serif; background:var(--bg); color:#fff; min-height:100vh; min-height:100dvh; overflow-x:hidden; }
-body::before{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-  background-image:
-    radial-gradient(1px 1px at 12% 20%,rgba(255,255,255,.35) 0%,transparent 100%),
-    radial-gradient(1px 1px at 80% 60%,rgba(255,255,255,.25) 0%,transparent 100%),
-    radial-gradient(2px 2px at 45% 85%,rgba(255,255,255,.18) 0%,transparent 100%),
-    radial-gradient(1px 1px at 90% 10%,rgba(255,255,255,.28) 0%,transparent 100%),
-    radial-gradient(1px 1px at 65% 30%,rgba(255,255,255,.2) 0%,transparent 100%);
-}
-.screen{ position:relative; z-index:1; display:none; min-height:100vh; min-height:100dvh; flex-direction:column; }
-.screen.on{ display:flex; }
-
-/* START */
-#start{ align-items:center; justify-content:center; text-align:center; padding:32px 20px 48px; }
-.start-icon{ font-size:5rem; margin-bottom:14px; animation:float 2s ease-in-out infinite alternate; display:block; }
-@keyframes float{ from{transform:translateY(0)} to{transform:translateY(-10px)} }
-.start-title{ font-family:'Lilita One',cursive; font-size:clamp(2rem,7vw,3rem); background:linear-gradient(135deg,#ffd700,#ff6b35); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; margin-bottom:8px; }
-.start-sub{ color:rgba(255,255,255,.5); font-size:.85rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:22px; }
-.topic-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-bottom:22px; }
-.t-chip{ padding:5px 14px; border-radius:50px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; }
-.t-v{ background:rgba(226,27,60,.25); color:#ff8080; border:1px solid rgba(226,27,60,.4); }
-.t-m{ background:rgba(19,104,206,.25); color:#80b8ff; border:1px solid rgba(19,104,206,.4); }
-.t-p{ background:rgba(38,137,12,.25); color:#80ff80; border:1px solid rgba(38,137,12,.4); }
-.t-a{ background:rgba(216,158,0,.25); color:#ffd700; border:1px solid rgba(216,158,0,.4); }
-.t-f{ background:rgba(255,20,147,.25); color:#ff80c8; border:1px solid rgba(255,20,147,.4); }
-.name-wrap{ width:100%; max-width:360px; margin-bottom:18px; text-align:left; }
-.field-label{ font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,.4); margin-bottom:7px; }
-input[type=text]{ width:100%; background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.12); border-radius:13px; color:#fff; font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; padding:13px 17px; outline:none; transition:border-color .2s; }
-input:focus{ border-color:rgba(255,107,53,.6); }
-input::placeholder{ color:rgba(255,255,255,.25); }
-.start-btn{ background:linear-gradient(135deg,#ff6b35,#ffd700); color:#0f0230; border:none; border-radius:50px; font-family:'Lilita One',cursive; font-size:1.25rem; cursor:pointer; padding:15px 50px; box-shadow:0 6px 26px rgba(255,107,53,.55); transition:transform .15s; letter-spacing:1px; }
-.start-btn:active{ transform:scale(.97); }
-.q-note{ margin-top:10px; font-size:.7rem; color:rgba(255,255,255,.28); font-weight:700; }
-.sb-link{ margin-top:14px; background:none; border:none; color:rgba(255,255,255,.4); font-family:'Nunito',sans-serif; font-size:.82rem; font-weight:800; cursor:pointer; text-decoration:underline; }
-
-/* QUIZ */
-#quiz{ padding:0 0 40px; }
-.quiz-top{ padding:14px 18px 0; }
-.quiz-hdr{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.p-name-tag{ background:rgba(255,255,255,.09); border-radius:50px; padding:5px 14px; font-size:.78rem; font-weight:800; color:rgba(255,255,255,.6); }
-.score-tag{ background:linear-gradient(135deg,#ff6b35,#ffd700); color:#0f0230; border-radius:50px; padding:5px 14px; font-family:'Lilita One',cursive; font-size:.9rem; }
-.prog-track{ background:rgba(255,255,255,.1); border-radius:50px; height:7px; overflow:hidden; margin-bottom:4px; }
-.prog-fill{ height:100%; background:linear-gradient(90deg,#ff6b35,#ffd700); border-radius:50px; transition:width .5s; }
-.prog-lbl{ font-size:.7rem; font-weight:800; color:rgba(255,255,255,.3); text-align:right; margin-bottom:10px; }
-.timer-wrap{ text-align:center; margin-bottom:10px; }
-.timer-pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.1); border-radius:50px; padding:8px 20px; font-family:'Lilita One',cursive; font-size:1.25rem; color:var(--gold); transition:color .3s,background .3s; }
-.timer-pill.urgent{ color:#ff4444; background:rgba(255,68,68,.15); border-color:rgba(255,68,68,.4); animation:tpulse .5s infinite alternate; }
-@keyframes tpulse{ from{transform:scale(1)} to{transform:scale(1.05)} }
-.q-card{ background:var(--card); border-radius:18px; padding:20px 18px 16px; margin:0 16px 12px; border:2px solid rgba(255,255,255,.08); box-shadow:0 6px 28px rgba(0,0,0,.4); position:relative; overflow:hidden; }
-.q-card::before{ content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,#ff6b35,#ffd700,#ff6b35); }
-.cat-tag{ display:inline-block; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; padding:3px 11px; border-radius:50px; margin-bottom:10px; }
-.cat-verslaving{ background:rgba(226,27,60,.3); color:#ff8080; border:1px solid rgba(226,27,60,.5); }
-.cat-misbeeld  { background:rgba(19,104,206,.3); color:#80b8ff; border:1px solid rgba(19,104,206,.5); }
-.cat-pesten    { background:rgba(38,137,12,.3);  color:#80ff80; border:1px solid rgba(38,137,12,.5); }
-.cat-algemeen  { background:rgba(216,158,0,.3);  color:#ffd700; border:1px solid rgba(216,158,0,.5); }
-.cat-fun       { background:rgba(255,20,147,.3); color:#ff80c8; border:1px solid rgba(255,20,147,.5); animation:funpulse 1s infinite alternate; }
-@keyframes funpulse{ from{box-shadow:none} to{box-shadow:0 0 8px rgba(255,20,147,.5)} }
-.q-text{ font-size:clamp(.95rem,3.8vw,1.1rem); font-weight:800; line-height:1.45; }
-.ans-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px; margin-bottom:12px; }
-.ans-btn{ border:none; border-radius:13px; padding:15px 13px; font-family:'Nunito',sans-serif; font-size:clamp(.82rem,2.8vw,.95rem); font-weight:800; color:#fff; cursor:pointer; display:flex; align-items:center; gap:9px; transition:transform .1s,opacity .25s,filter .25s; min-height:52px; text-align:left; }
-.ans-btn:active:not(:disabled){ transform:scale(.97); }
-.ans-btn:nth-child(1){ background:linear-gradient(135deg,#c7133e,#e21b3c); box-shadow:0 3px 12px rgba(226,27,60,.4); }
-.ans-btn:nth-child(2){ background:linear-gradient(135deg,#0f52a5,#1368ce); box-shadow:0 3px 12px rgba(19,104,206,.4); }
-.ans-btn:nth-child(3){ background:linear-gradient(135deg,#b08200,#d89e00); box-shadow:0 3px 12px rgba(216,158,0,.4); }
-.ans-btn:nth-child(4){ background:linear-gradient(135deg,#1a6b08,#26890c); box-shadow:0 3px 12px rgba(38,137,12,.4); }
-.ans-btn.correct{ outline:4px solid #ffd700; filter:brightness(1.3); animation:cpop .4s ease; }
-.ans-btn.wrong{ opacity:.35; filter:grayscale(.5); }
-@keyframes cpop{ 0%{transform:scale(1)} 40%{transform:scale(1.07)} 100%{transform:scale(1)} }
-.feedback{ margin:0 16px 10px; border-radius:13px; padding:13px 16px; display:none; animation:slideup .3s ease; }
-.feedback.ok { background:rgba(38,137,12,.25); border:2px solid rgba(38,137,12,.5); }
-.feedback.bad{ background:rgba(226,27,60,.2);  border:2px solid rgba(226,27,60,.4); }
-.fb-title{ font-weight:900; font-size:.95rem; margin-bottom:4px; }
-.fb-title.ok { color:#80ff80; }
-.fb-title.bad{ color:#ff8080; }
-.fb-body{ font-size:.82rem; color:rgba(255,255,255,.82); font-weight:600; line-height:1.5; }
-@keyframes slideup{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.next-btn{ display:none; margin:0 auto; background:linear-gradient(135deg,#ff6b35,#ffd700); color:#0f0230; border:none; border-radius:50px; padding:14px 44px; font-family:'Lilita One',cursive; font-size:1.15rem; cursor:pointer; box-shadow:0 6px 22px rgba(255,107,53,.5); transition:transform .15s; letter-spacing:1px; }
-.next-btn:active{ transform:scale(.97); }
-
-/* END */
-#end{ align-items:center; justify-content:center; text-align:center; padding:32px 20px 48px; animation:fadein .5s ease; }
-@keyframes fadein{ from{opacity:0} to{opacity:1} }
-.end-trophy{ font-size:5rem; animation:bounce 1s infinite alternate; margin-bottom:14px; display:block; }
-@keyframes bounce{ from{transform:translateY(0)} to{transform:translateY(-14px)} }
-.end-title{ font-family:'Lilita One',cursive; font-size:clamp(1.8rem,6vw,2.8rem); background:linear-gradient(135deg,#ffd700,#ff6b35); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:6px; }
-.end-name{ font-size:.95rem; color:rgba(255,255,255,.5); font-weight:700; margin-bottom:4px; }
-.end-pts{ font-size:1.1rem; color:rgba(255,255,255,.75); font-weight:800; margin-bottom:6px; }
-.end-stars{ font-size:2.2rem; letter-spacing:5px; margin-bottom:16px; display:block; }
-.end-bar-wrap{ width:100%; max-width:320px; background:rgba(255,255,255,.1); border-radius:50px; height:11px; overflow:hidden; margin:0 auto 10px; }
-.end-bar{ height:100%; background:linear-gradient(90deg,#ff6b35,#ffd700); border-radius:50px; transition:width 1s ease; }
-.end-msg{ font-size:.86rem; color:rgba(255,255,255,.5); font-weight:700; max-width:320px; line-height:1.6; margin-bottom:6px; }
-.saving-badge{ display:inline-block; background:rgba(255,215,0,.12); border:1px solid rgba(255,215,0,.3); border-radius:50px; padding:6px 18px; font-size:.75rem; font-weight:800; color:var(--gold); margin-bottom:18px; }
-.btn-row{ display:flex; gap:10px; max-width:340px; width:100%; }
-.btn-primary{ background:linear-gradient(135deg,#ff6b35,#ffd700); color:#0f0230; border:none; border-radius:50px; font-family:'Lilita One',cursive; font-size:1rem; cursor:pointer; padding:13px 20px; box-shadow:0 5px 18px rgba(255,107,53,.5); transition:transform .15s; flex:1; }
-.btn-primary:active{ transform:scale(.97); }
-.btn-ghost{ background:rgba(255,255,255,.1); color:#fff; border:2px solid rgba(255,255,255,.2); border-radius:50px; font-family:'Lilita One',cursive; font-size:1rem; cursor:pointer; padding:13px 20px; transition:background .15s; flex:1; }
-.btn-ghost:hover{ background:rgba(255,255,255,.18); }
-
-/* SCOREBOARD */
-#scoreboard{ padding:24px 18px 48px; align-items:center; }
-.sb-title{ font-family:'Lilita One',cursive; font-size:1.8rem; color:var(--gold); text-align:center; margin-bottom:4px; }
-.sb-sub{ color:rgba(255,255,255,.4); font-size:.78rem; font-weight:700; text-align:center; margin-bottom:20px; }
-.sb-list{ width:100%; max-width:500px; display:flex; flex-direction:column; gap:9px; margin:0 auto 22px; }
-.sb-row{ background:var(--card); border-radius:13px; padding:12px 16px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.08); animation:sright .4s ease both; }
-.sb-row:nth-child(1){ border-color:rgba(255,215,0,.45); background:rgba(255,215,0,.09); }
-.sb-row:nth-child(2){ border-color:rgba(192,192,192,.3); }
-.sb-row:nth-child(3){ border-color:rgba(205,127,50,.3); }
-@keyframes sright{ from{transform:translateX(-20px);opacity:0} to{transform:translateX(0);opacity:1} }
-.sb-rank{ font-family:'Lilita One',cursive; font-size:1.2rem; width:28px; text-align:center; }
-.sb-medal{ font-size:1.2rem; }
-.sb-name{ flex:1; font-weight:800; font-size:.95rem; }
-.sb-pts{ font-family:'Lilita One',cursive; font-size:1.1rem; color:var(--gold); }
-.sb-you{ color:#ff6b35; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-left:4px; }
-.sb-loading{ text-align:center; color:rgba(255,255,255,.35); font-weight:700; font-size:.88rem; padding:30px; }
-.live-dot{ display:inline-block; width:8px; height:8px; background:#4cff72; border-radius:50%; margin-right:6px; animation:livepulse 1.2s infinite; }
-@keyframes livepulse{ 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-
-@media(max-width:420px){ .ans-grid{ grid-template-columns:1fr; } }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sociaal Media Quiz – Multiplayer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0f0230; --card:#1a0550; --gold:#ffd700; --accent:#ff6b35; --muted:rgba(255,255,255,.45); }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{ font-family:'Nunito',sans-serif; background:var(--bg); color:#fff; min-height:100vh; }
+    body::before{
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background-image:
+        radial-gradient(1px 1px at 12% 20%,rgba(255,255,255,.35) 0%,transparent 100%),
+        radial-gradient(1px 1px at 80% 60%,rgba(255,255,255,.25) 0%,transparent 100%),
+        radial-gradient(2px 2px at 45% 85%,rgba(255,255,255,.18) 0%,transparent 100%),
+        radial-gradient(1px 1px at 90% 10%,rgba(255,255,255,.28) 0%,transparent 100%),
+        radial-gradient(1px 1px at 65% 30%,rgba(255,255,255,.2) 0%,transparent 100%);
+    }
+    .screen{ display:none; min-height:100vh; position:relative; z-index:1; padding:24px 18px 36px; }
+    .screen.on{ display:flex; flex-direction:column; }
+    .center{ align-items:center; justify-content:center; text-align:center; }
+    .title{ font-family:'Lilita One',cursive; font-size:clamp(2rem,7vw,3.2rem); background:linear-gradient(135deg,#ffd700,#ff6b35); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.05; margin-bottom:8px; }
+    .sub{ color:var(--muted); font-weight:800; letter-spacing:1.5px; text-transform:uppercase; font-size:.8rem; margin-bottom:22px; }
+    .card{ width:100%; max-width:760px; margin:0 auto; background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); padding:18px; }
+    .stack{ display:flex; flex-direction:column; gap:12px; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    input[type=text]{ width:100%; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.12); border-radius:14px; color:#fff; font:800 1rem 'Nunito',sans-serif; padding:13px 15px; outline:none; }
+    input[type=text]:focus{ border-color:rgba(255,107,53,.7); }
+    .btn{ border:none; cursor:pointer; border-radius:999px; padding:13px 18px; font:800 1rem 'Nunito',sans-serif; }
+    .btn-primary{ background:linear-gradient(135deg,#ff6b35,#ffd700); color:#18073f; }
+    .btn-secondary{ background:rgba(255,255,255,.1); color:#fff; border:2px solid rgba(255,255,255,.15); }
+    .btn-danger{ background:rgba(255,80,80,.15); color:#ff9b9b; border:2px solid rgba(255,80,80,.3); }
+    .grow{ flex:1; }
+    .small{ font-size:.88rem; color:var(--muted); }
+    .pill{ display:inline-block; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.08); font-weight:800; }
+    .room-code{ font-family:'Lilita One',cursive; letter-spacing:2px; font-size:2rem; color:var(--gold); }
+    .topbar{ max-width:980px; width:100%; margin:0 auto 12px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .meta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .prog-track{ height:8px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+    .prog-fill{ height:100%; width:0%; background:linear-gradient(90deg,#ff6b35,#ffd700); }
+    .q-card{ width:100%; max-width:980px; margin:0 auto; background:var(--card); border-radius:20px; border:1px solid rgba(255,255,255,.08); padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    .q-text{ font-size:clamp(1rem,3vw,1.25rem); font-weight:900; line-height:1.45; }
+    .ans-grid{ width:100%; max-width:980px; margin:14px auto 0; display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .ans-btn{ border:none; border-radius:15px; min-height:58px; padding:14px; color:#fff; text-align:left; font:800 1rem 'Nunito',sans-serif; cursor:pointer; }
+    .ans-btn:nth-child(1){ background:linear-gradient(135deg,#c7133e,#e21b3c); }
+    .ans-btn:nth-child(2){ background:linear-gradient(135deg,#0f52a5,#1368ce); }
+    .ans-btn:nth-child(3){ background:linear-gradient(135deg,#b08200,#d89e00); }
+    .ans-btn:nth-child(4){ background:linear-gradient(135deg,#1a6b08,#26890c); }
+    .ans-btn[disabled]{ opacity:.55; cursor:not-allowed; }
+    .ans-btn.correct{ outline:4px solid #ffd700; opacity:1; }
+    .ans-btn.wrong{ opacity:.35; }
+    .split{ max-width:980px; width:100%; margin:14px auto 0; display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+    .panel{ background:var(--card); border-radius:18px; border:1px solid rgba(255,255,255,.08); padding:16px; }
+    .panel h3{ margin-bottom:10px; font-size:1rem; }
+    .players{ display:flex; flex-direction:column; gap:8px; }
+    .player-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,255,255,.05); border-radius:12px; padding:10px 12px; }
+    .badge{ font-size:.72rem; font-weight:900; color:#18073f; background:var(--gold); padding:3px 8px; border-radius:999px; }
+    .feedback{ font-size:.95rem; line-height:1.5; color:rgba(255,255,255,.9); }
+    .status{ font-size:.9rem; color:var(--muted); }
+    .leader-name{ font-weight:800; }
+    .leader-score{ font-family:'Lilita One',cursive; color:var(--gold); }
+    .footer-note{ margin-top:14px; text-align:center; color:var(--muted); font-size:.85rem; }
+    .hidden{ display:none !important; }
+    @media (max-width: 760px){
+      .ans-grid{ grid-template-columns:1fr; }
+      .split{ grid-template-columns:1fr; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- START -->
-<div class="screen on" id="start">
-  <span class="start-icon">📱</span>
-  <div class="start-title">Sociaal Media Quiz</div>
-  <div class="start-sub">VMBO Edition · 22 vragen</div>
-  <div class="topic-row">
-    <span class="t-chip t-v">📵 Verslaving</span>
-    <span class="t-chip t-m">🪞 Misbeeld</span>
-    <span class="t-chip t-p">😢 Cyberpesten</span>
-    <span class="t-chip t-a">💡 Algemeen</span>
-    <span class="t-chip t-f">😂 Bonusvragen</span>
-  </div>
-  <div class="name-wrap">
-    <div class="field-label">Jouw naam</div>
-    <input type="text" id="nameInput" placeholder="Bijv. Emma" maxlength="20" autocomplete="off" />
-  </div>
-  <button class="start-btn" onclick="startQuiz()">▶ Start de quiz!</button>
-  <div class="q-note">22 vragen · 20 sec per vraag · Sneller = meer punten</div>
-  <button class="sb-link" onclick="showScoreboard()">🏆 Bekijk scorebord</button>
-</div>
-
-<!-- QUIZ -->
-<div class="screen" id="quiz">
-  <div class="quiz-top">
-    <div class="quiz-hdr">
-      <div class="p-name-tag" id="qPlayerName">Speler</div>
-      <div class="score-tag">⭐ <span id="qScore">0</span></div>
+  <section class="screen on center" id="home">
+    <div class="card stack" style="max-width:540px">
+      <div class="title">Sociaal Media Quiz</div>
+      <div class="sub">Multiplayer · kamers · live scorebord</div>
+      <input id="nameInput" type="text" maxlength="20" placeholder="Jouw naam" />
+      <div class="row">
+        <button class="btn btn-primary grow" id="createBtn">🎮 Kamer maken</button>
+      </div>
+      <div class="row">
+        <input id="roomInput" type="text" maxlength="6" placeholder="Voer kamercode in" class="grow" style="text-transform:uppercase" />
+        <button class="btn btn-secondary" id="joinBtn">Meedoen</button>
+      </div>
+      <div class="small">Eén speler maakt een kamer. De rest vult dezelfde code in en doet mee.</div>
+      <div class="small" id="homeError"></div>
     </div>
-    <div class="prog-track"><div class="prog-fill" id="qProgFill" style="width:0%"></div></div>
-    <div class="prog-lbl" id="qProgLbl"></div>
-  </div>
-  <div class="timer-wrap">
-    <div class="timer-pill" id="qTimerPill">⏱ <span id="qTimerNum">20</span>s</div>
-  </div>
-  <div class="q-card">
-    <span class="cat-tag" id="qCatTag"></span>
-    <div class="q-text" id="qText"></div>
-  </div>
-  <div class="ans-grid" id="qAnsGrid"></div>
-  <div class="feedback" id="qFeedback">
-    <div class="fb-title" id="qFbTitle"></div>
-    <div class="fb-body" id="qFbBody"></div>
-  </div>
-  <div style="text-align:center">
-    <button class="next-btn" id="qNextBtn" onclick="nextQ()">Volgende vraag →</button>
-  </div>
-</div>
+  </section>
 
-<!-- END -->
-<div class="screen" id="end">
-  <span class="end-trophy" id="endTrophy">🏆</span>
-  <div class="end-title" id="endTitle"></div>
-  <div class="end-name"  id="endName"></div>
-  <div class="end-pts"   id="endPts"></div>
-  <span class="end-stars" id="endStars"></span>
-  <div class="end-bar-wrap"><div class="end-bar" id="endBar" style="width:0%"></div></div>
-  <div class="saving-badge" id="savingBadge">📤 Score opslaan…</div>
-  <div class="end-msg" id="endMsg"></div>
-  <div class="btn-row">
-    <button class="btn-ghost" onclick="restart()">🔄 Opnieuw</button>
-    <button class="btn-primary" onclick="showScoreboard()">🏆 Scorebord</button>
-  </div>
-</div>
+  <section class="screen" id="lobby">
+    <div class="card stack" style="max-width:760px">
+      <div class="title" style="font-size:2.2rem">Lobby</div>
+      <div class="small">Kamercode</div>
+      <div class="room-code" id="roomCodeLabel">------</div>
+      <div class="small" id="lobbyRole">Je bent in de lobby.</div>
+      <div class="row">
+        <button class="btn btn-primary grow" id="startGameBtn">▶ Start spel</button>
+        <button class="btn btn-secondary" id="copyCodeBtn">📋 Kopieer code</button>
+        <button class="btn btn-danger" id="leaveLobbyBtn">🚪 Verlaat</button>
+      </div>
+      <div class="panel">
+        <h3>Spelers</h3>
+        <div class="players" id="lobbyPlayers"></div>
+      </div>
+      <div class="small" id="lobbyStatus">Wacht op spelers…</div>
+    </div>
+  </section>
 
-<!-- SCOREBOARD -->
-<div class="screen" id="scoreboard">
-  <div class="sb-title">🏆 Scorebord</div>
-  <div class="sb-sub"><span class="live-dot"></span>Live · vernieuwt automatisch</div>
-  <div class="sb-list" id="sbList"><div class="sb-loading">Scores laden…</div></div>
-  <div class="btn-row" style="max-width:500px">
-    <button class="btn-ghost" onclick="show('start')">← Terug</button>
-    <button class="btn-primary" onclick="loadScoreboard()">🔄 Vernieuwen</button>
-  </div>
-</div>
+  <section class="screen" id="game">
+    <div class="topbar">
+      <div class="meta">
+        <span class="pill" id="playerBadge">Speler</span>
+        <span class="pill">Kamer: <strong id="gameRoomCode">------</strong></span>
+        <span class="pill">Vraag <strong id="questionNr">1</strong>/<strong id="questionTotal">1</strong></span>
+      </div>
+      <div class="meta">
+        <span class="pill">⏱ <strong id="timerText">20</strong>s</span>
+        <span class="pill">⭐ <strong id="myScoreText">0</strong></span>
+      </div>
+    </div>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    <div class="q-card stack">
+      <div class="small" id="catLabel">Categorie</div>
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+      <div class="q-text" id="questionText">Vraag komt zo…</div>
+    </div>
 
-// ── FIREBASE CONFIG ──
-const firebaseConfig = {
-  databaseURL: "https://aaad-500-smiles-default-rtdb.firebaseio.com"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+    <div class="ans-grid" id="answersWrap"></div>
 
-// ── QUESTIONS ──
-const SHAPES = ["▲","◆","●","■"];
-const Q = [
-  { cat:"verslaving", catL:"📵 Verslaving", q:"Hoeveel uur per dag zit een gemiddelde Nederlandse tiener (12–18 jaar) op sociaal media?", a:["Circa 1 uur","Circa 3 uur","Circa 5 uur","Circa 7 uur"], c:1, fact:"Nederlandse tieners zitten gemiddeld zo'n 3 uur per dag op sociaal media. Dat is meer dan 1000 uur per jaar!" },
-  { cat:"verslaving", catL:"📵 Verslaving", q:"Welk hormoon wordt aangemaakt als je een like of reactie krijgt op sociaal media?", a:["Melatonine","Cortisol","Dopamine","Adrenaline"], c:2, fact:"Dopamine is het 'beloningshormoon'. Elk like-notificatie zorgt voor een kleine dopamineboost, waardoor je steeds meer wilt scrollen." },
-  { cat:"verslaving", catL:"📵 Verslaving", q:"Wat is 'doomscrolling'?", a:["Berichten verwijderen uit verveling","Eindeloos negatief nieuws lezen op je telefoon","Iemand blokkeren op sociaal media","Een account aanmaken met een valse naam"], c:1, fact:"Doomscrolling betekent dat je blijft scrollen door negatief nieuws, zelfs als je er slecht van wordt." },
-  { cat:"verslaving", catL:"📵 Verslaving", q:"Welk gevolg heeft blauw licht van je telefoon voor het slapen?", a:["Je slaapt sneller in","Het heeft geen invloed","Je droomt levendiger","Je maakt minder slaaphormoon aan"], c:3, fact:"Blauw licht remt de aanmaak van melatonine, het slaaphormoon. Daardoor duurt het langer voor je in slaap valt." },
-  { cat:"verslaving", catL:"📵 Verslaving", q:"Welke functie op sociaal media is speciaal ontworpen om je langer te laten scrollen?", a:["Zoekbalk","Infinite scroll (eindeloos scrollen)","Profielfoto","Volgen-knop"], c:1, fact:"Infinite scroll is bedacht om te voorkomen dat je stopt. Er is geen eindpunt, waardoor je onbewust veel langer op een app blijft." },
-  { cat:"fun", catL:"😂 Bonusvraag", q:"Je ligt in bed. Het is 01:30. Je zei om 23:00 'nog één video'. Wat is er gebeurd?", a:["Je bent gewoon vroeg wakker","TikTok heeft je gehypnotiseerd, normaal","Je hebt heel verantwoordelijk je scherm uitgezet","Je telefoon was leeg — dankzij de telefoon zelf"], c:1, fact:"Het algoritme is speciaal gebouwd om je NIET te laten stoppen. Jij verliest het van een supercomputer. Elke keer. Geen schaamte — maar wel bewustzijn!" },
-  { cat:"misbeeld", catL:"🪞 Misbeeld", q:"Wat heet het wanneer foto's op Instagram en TikTok zo bewerkt zijn dat ze een onrealistisch beeld geven van het menselijk lichaam?", a:["Fotorealisme","Filterbubbel","Body image distortion","Deepfake"], c:2, fact:"Body image distortion treedt op als je jezelf vergelijkt met zwaar bewerkte beelden. Filters en Photoshop zorgen voor een onrealistisch schoonheidsideaal." },
-  { cat:"misbeeld", catL:"🪞 Misbeeld", q:"Hoeveel procent van de foto's op Instagram bevat een filter of bewerking?", a:["Circa 10%","Circa 30%","Circa 60%","Circa 80%"], c:3, fact:"Onderzoek toont aan dat zo'n 80% van de foto's op Instagram bewerkt of gefilterd is." },
-  { cat:"misbeeld", catL:"🪞 Misbeeld", q:"Welke aandoening kan vaker voorkomen bij jongeren die veel tijd besteden aan het vergelijken van zichzelf met influencers?", a:["ADHD","Dyslexie","Angststoornis of depressie","Slaapwandelen"], c:2, fact:"Veel studies laten zien dat frequent gebruik van sociaal media angst en depressieve klachten kan versterken bij jongeren." },
-  { cat:"misbeeld", catL:"🪞 Misbeeld", q:"Wat is een 'filterbubbel' op sociaal media?", a:["Een Snapchat-filter die je mooier maakt","Een algoritme dat je alleen laat zien wat je al leuk vindt","Een privé-instelling voor je account","Een bericht dat automatisch verdwijnt na 24 uur"], c:1, fact:"Een filterbubbel zorgt ervoor dat je steeds meer van hetzelfde ziet, waardoor je een eenzijdig beeld van de wereld krijgt." },
-  { cat:"misbeeld", catL:"🪞 Misbeeld", q:"Wat heet het wanneer iemand zijn leven online veel mooier presenteert dan het werkelijk is?", a:["Catfishing","Highlight reel effect","Ghosting","Trolling"], c:1, fact:"Het 'highlight reel effect': mensen laten alleen de beste momenten zien online. Dit wekt de indruk dat andermans leven perfect is." },
-  { cat:"fun", catL:"😂 Bonusvraag", q:"Een influencer post een foto op het strand met de tekst 'gewoon even chillen 🌊'. Wat is er waarschijnlijk écht gebeurd?", a:["Ze lag inderdaad gewoon te chillen","45 min foto's schieten, 2 uur bewerken, 10 min caption","Ze had een professionele fotograaf + Photoshop","Opties B én C zijn allebei waar"], c:3, fact:"De meeste influencer-posts kosten uren werk. Wat jij ziet als 'spontaan' is vaak een professionele productie." },
-  { cat:"pesten", catL:"😢 Cyberpesten", q:"Wat is de definitie van cyberpesten?", a:["Iemand uitschelden op school","Online of via telefoon iemand herhaaldelijk pesten of kwetsen","Te veel gamen op de computer","Foute berichten sturen naar een vreemde"], c:1, fact:"Cyberpesten is het herhaaldelijk kwetsen, bedreigen of uitschelden van iemand via internet of telefoon." },
-  { cat:"pesten", catL:"😢 Cyberpesten", q:"Wat is 'catfishing'?", a:["Iemand blokkeren op WhatsApp","Een valse online identiteit aannemen om iemand te misleiden","Berichten verwijderen na verzending","Je locatie delen via sociaal media"], c:1, fact:"Bij catfishing doet iemand zich voor als een ander persoon online, vaak met neppe foto's." },
-  { cat:"pesten", catL:"😢 Cyberpesten", q:"Hoeveel procent van de Nederlandse jongeren (12–18 jaar) heeft weleens te maken gehad met cyberpesten?", a:["Circa 5%","Circa 15%","Circa 25%","Circa 45%"], c:2, fact:"Circa 1 op de 4 Nederlandse jongeren heeft te maken gehad met cyberpesten." },
-  { cat:"pesten", catL:"😢 Cyberpesten", q:"Wat maakt cyberpesten anders dan 'gewoon' pesten op school?", a:["Het is minder erg, want het is niet fysiek","Het stopt als school voorbij is","Het kan 24/7 doorgaan en een groot publiek bereiken","Er zijn geen gevolgen voor de pester"], c:2, fact:"Cyberpesten houdt niet op als je thuis bent. Berichten kunnen snel worden gedeeld met honderden mensen." },
-  { cat:"pesten", catL:"😢 Cyberpesten", q:"Wat is het beste wat je kunt doen als je slachtoffer bent van cyberpesten?", a:["Terugpesten zodat ze stoppen","Alles verwijderen en niets zeggen","Bewijzen bewaren en het melden bij een vertrouwenspersoon","Je account verwijderen en niet meer online gaan"], c:2, fact:"Bewaar schermafbeeldingen als bewijs en vertel het aan een ouder, leraar of vertrouwenspersoon. Pestelefoon: 0800-0201." },
-  { cat:"fun", catL:"😂 Bonusvraag", q:"Je stuurt iemand een berichtje. Je ziet twee blauwe vinkjes. Ze reageren niet. Wat doe jij?", a:["Rustig blijven, ze zijn vast druk","Je telefoon tien keer pakken om te checken","Een tweede berichtje sturen van 'haha stuur maar niks hoor'","Zowel B als C, in die volgorde"], c:3, fact:"De leesbevestiging is uitgevonden om mensen gek te maken. En het werkt. Maar misschien zijn ze gewoon druk!" },
-  { cat:"algemeen", catL:"💡 Algemeen", q:"Vanaf welke leeftijd mag je officieel een account aanmaken op de meeste sociaal media platformen?", a:["10 jaar","13 jaar","16 jaar","18 jaar"], c:1, fact:"De meeste platformen hanteren 13 jaar als minimumleeftijd op basis van de Amerikaanse COPPA-wet." },
-  { cat:"algemeen", catL:"💡 Algemeen", q:"Wat is een algoritme op sociaal media?", a:["Een soort wachtwoord","Een computerprogramma dat bepaalt wat jij te zien krijgt","Een filter voor je foto's","Een manier om berichten te versleutelen"], c:1, fact:"Een algoritme analyseert wat je bekijkt en leuk vindt, en laat je daarna meer van hetzelfde zien." },
-  { cat:"algemeen", catL:"💡 Algemeen", q:"Welk land heeft als eerste een wet ingevoerd die kinderen onder de 16 jaar verbiedt om sociaal media te gebruiken?", a:["Nederland","Verenigde Staten","Australië","Duitsland"], c:2, fact:"Australië voerde in 2024 als eerste land ter wereld een sociaalmedaverbod in voor kinderen onder de 16 jaar." },
-  { cat:"algemeen", catL:"💡 Algemeen", q:"Wat betekent FOMO en waarmee hangt het samen?", a:["Fear Of Missing Out – angst om iets te missen","Free Online Media Opportunity – gratis content","Focus On My Offline – bewust offline gaan","Fake Online Media Overload – te veel nep nieuws"], c:0, fact:"FOMO (Fear Of Missing Out) is de angst dat anderen iets leuks beleven zonder jou. Sociaal media versterkt FOMO enorm." },
-  { cat:"fun", catL:"😂 Bonusvraag", q:"Je hebt zojuist 22 vragen beantwoord over de gevaren van sociaal media. Wat ga je hierna als eerste doen?", a:["Mijn telefoon voor altijd uitzetten","De quiz delen op mijn story natuurlijk","Even snel TikTok checken of ik iets gemist heb","Mijn leraar een like geven"], c:1, fact:"Haha, betrapt! Maar serieus: kennis is macht — ook als je tóch nog scrolt. Gebruik het slim! 💪" }
-];
+    <div class="split">
+      <div class="panel">
+        <h3>Uitleg</h3>
+        <div class="feedback" id="feedbackText">Kies een antwoord.</div>
+      </div>
+      <div class="panel">
+        <h3>Live scorebord</h3>
+        <div class="players" id="livePlayers"></div>
+      </div>
+    </div>
+  </section>
 
-// ── STATE ──
-let playerName = '';
-let score = 0;
-let currentQ = 0;
-let timerIv = null;
-let timeLeft = 20;
-let answered = false;
-let sbUnsubscribe = null;
+  <section class="screen center" id="end">
+    <div class="card stack" style="max-width:760px">
+      <div class="title">Einde spel</div>
+      <div class="sub">Definitieve uitslag</div>
+      <div class="panel">
+        <div class="players" id="finalPlayers"></div>
+      </div>
+      <div class="row">
+        <button class="btn btn-secondary grow" id="playAgainBtn">🔄 Terug naar start</button>
+      </div>
+    </div>
+  </section>
 
-function show(id) {
-  ['start','quiz','end','scoreboard'].forEach(s => {
-    document.getElementById(s).classList.toggle('on', s === id);
-  });
-}
-
-window.show = show;
-
-// ── START ──
-window.startQuiz = function() {
-  const n = document.getElementById('nameInput').value.trim();
-  if (!n) { document.getElementById('nameInput').focus(); return; }
-  playerName = n; score = 0; currentQ = 0;
-  document.getElementById('qPlayerName').textContent = playerName;
-  show('quiz');
-  loadQ(0);
-};
-
-// ── LOAD QUESTION ──
-function loadQ(idx) {
-  answered = false;
-  clearInterval(timerIv);
-  const q = Q[idx];
-  const total = Q.length;
-
-  document.getElementById('qProgFill').style.width = ((idx/total)*100)+'%';
-  document.getElementById('qProgLbl').textContent = `Vraag ${idx+1} van ${total}`;
-
-  const tag = document.getElementById('qCatTag');
-  tag.textContent = q.catL; tag.className = 'cat-tag cat-'+q.cat;
-  document.getElementById('qText').textContent = q.q;
-
-  const grid = document.getElementById('qAnsGrid');
-  grid.innerHTML = '';
-  q.a.forEach((a,i) => {
-    const btn = document.createElement('button');
-    btn.className='ans-btn'; btn.id='ab_'+i;
-    btn.innerHTML=`<span style="font-size:1.1rem;flex-shrink:0">${SHAPES[i]}</span>${a}`;
-    btn.onclick=()=>answer(i);
-    grid.appendChild(btn);
-  });
-
-  document.getElementById('qFeedback').style.display='none';
-  document.getElementById('qNextBtn').style.display='none';
-  document.getElementById('qScore').textContent=score;
-
-  timeLeft=20; updateTimer();
-  timerIv=setInterval(()=>{
-    timeLeft--; updateTimer();
-    if(timeLeft<=0){clearInterval(timerIv);if(!answered)timeout();}
-  },1000);
-}
-
-function updateTimer(){
-  document.getElementById('qTimerNum').textContent=timeLeft;
-  document.getElementById('qTimerPill').className=timeLeft<=5?'timer-pill urgent':'timer-pill';
-}
-
-function answer(idx){
-  if(answered)return;
-  answered=true; clearInterval(timerIv);
-  const q=Q[currentQ];
-  for(let i=0;i<4;i++){
-    const b=document.getElementById('ab_'+i); if(!b)continue;
-    b.disabled=true;
-    if(i===q.c)b.classList.add('correct');
-    else if(i===idx)b.classList.add('wrong');
-    else b.style.opacity='.4';
-  }
-  const fb=document.getElementById('qFeedback');
-  if(idx===q.c){
-    const pts=Math.max(100,timeLeft*50); score+=pts;
-    document.getElementById('qScore').textContent=score;
-    fb.className='feedback ok';
-    document.getElementById('qFbTitle').className='fb-title ok';
-    document.getElementById('qFbTitle').textContent='✅ Goed! +'+pts+' punten';
-  } else {
-    fb.className='feedback bad';
-    document.getElementById('qFbTitle').className='fb-title bad';
-    document.getElementById('qFbTitle').textContent='❌ Helaas, dat klopt niet';
-  }
-  document.getElementById('qFbBody').textContent='💡 '+q.fact;
-  fb.style.display='block';
-  document.getElementById('qNextBtn').style.display='inline-block';
-}
-
-function timeout(){
-  if(answered)return; answered=true;
-  const q=Q[currentQ];
-  for(let i=0;i<4;i++){const b=document.getElementById('ab_'+i);if(b){b.disabled=true;b.style.opacity='.4';}}
-  const cb=document.getElementById('ab_'+q.c);if(cb){cb.style.opacity='1';cb.classList.add('correct');}
-  const fb=document.getElementById('qFeedback');
-  fb.className='feedback bad';
-  document.getElementById('qFbTitle').className='fb-title bad';
-  document.getElementById('qFbTitle').textContent='⏱️ Te laat! Geen punten';
-  document.getElementById('qFbBody').textContent='💡 '+q.fact;
-  fb.style.display='block';
-  document.getElementById('qNextBtn').style.display='inline-block';
-}
-
-window.nextQ = function(){
-  currentQ++;
-  if(currentQ>=Q.length) showEnd();
-  else loadQ(currentQ);
-};
-
-// ── END + FIREBASE SAVE ──
-function showEnd(){
-  show('end');
-  const pct=Math.min(100,Math.round((score/(Q.length*1000))*100));
-  let trophy,title,stars,msg;
-  if(pct>=85){trophy='🏆';title='Fantastisch!';stars='⭐⭐⭐';msg='Wauw, je weet echt veel over sociaal media! Deel je kennis met je vrienden.';}
-  else if(pct>=55){trophy='🥈';title='Goed bezig!';stars='⭐⭐';msg='Netjes! Er is nog wat te leren, maar je snapt al goed hoe sociaal media werkt.';}
-  else{trophy='📱';title='Blijf leren!';stars='⭐';msg='Sociaal media heeft meer invloed dan je denkt. Speel nog een keer en leer er alles over!';}
-
-  document.getElementById('endTrophy').textContent=trophy;
-  document.getElementById('endTitle').textContent=title;
-  document.getElementById('endName').textContent=playerName+', jij hebt gescoord:';
-  document.getElementById('endPts').textContent=score+' punten';
-  document.getElementById('endStars').textContent=stars;
-  document.getElementById('endMsg').textContent=msg;
-  setTimeout(()=>{document.getElementById('endBar').style.width=pct+'%';},300);
-
-  // Save to Firebase
-  const badge=document.getElementById('savingBadge');
-  badge.textContent='📤 Score opslaan…';
-  const scoresRef=ref(db,'scores');
-  push(scoresRef,{ name:playerName, score, timestamp: Date.now() })
-    .then(()=>{ badge.textContent='✅ Score opgeslagen!'; })
-    .catch(()=>{ badge.textContent='⚠️ Opslaan mislukt'; });
-}
-
-// ── SCOREBOARD ──
-window.showScoreboard = function(){
-  show('scoreboard');
-  loadScoreboard();
-};
-
-window.loadScoreboard = function(){
-  document.getElementById('sbList').innerHTML='<div class="sb-loading">Scores laden…</div>';
-  const scoresRef=ref(db,'scores');
-  // One-time read
-  onValue(scoresRef,(snapshot)=>{
-    const data=snapshot.val();
-    if(!data){
-      document.getElementById('sbList').innerHTML='<div class="sb-loading">Nog geen scores.<br>Speel de quiz als eerste! 🎯</div>';
-      return;
-    }
-    const entries=Object.values(data)
-      .filter(e=>e.name&&e.score!=null)
-      .sort((a,b)=>b.score-a.score)
-      .slice(0,25);
-
-    const medals=['🥇','🥈','🥉'];
-    document.getElementById('sbList').innerHTML=entries.map((e,i)=>`
-      <div class="sb-row" style="animation-delay:${i*.06}s">
-        <span class="sb-rank">${i+1}</span>
-        <span class="sb-medal">${medals[i]||''}</span>
-        <span class="sb-name">${e.name}${e.name===playerName?'<span class="sb-you">jij</span>':''}</span>
-        <span class="sb-pts">${e.score} pts</span>
-      </div>`).join('');
-  },{onlyOnce:true});
-};
-
-window.restart=function(){ score=0; currentQ=0; show('start'); };
-</script>
-</body>
-</html>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import {
+      getDatabase,
+      ref,
+      set,
+      get,
+      update,
+      remove,
+      onValue,
+      push,
+      onDisconnect
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
