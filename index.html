@@ -152,29 +152,462 @@
     </div>
   </section>
 
-  <script type="module">  
+<script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import {
-    getDatabase,
-    ref,
-    set,
-    get,
-    update,
-    remove,
-    onValue,
-    push,
-    onDisconnect
-  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  remove,
+  onValue,
+  onDisconnect
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAU68OEwUfhck-R5VbXdGZWNMswOuIvFY4",
-    authDomain: "aaad-500-smiles.firebaseapp.com",
-    databaseURL: "https://aaad-500-smiles-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "aaad-500-smiles",
-    storageBucket: "aaad-500-smiles.firebasestorage.app",
-    messagingSenderId: "92914278254",
-    appId: "1:92914278254:web:92aaed0871a91b45bb2b7f"
+const firebaseConfig = {
+  apiKey: "AIzaSyAU68OEwUfhck-R5VbXdGZWNMswOuIvFY4",
+  authDomain: "aaad-500-smiles.firebaseapp.com",
+  databaseURL: "https://aaad-500-smiles-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "aaad-500-smiles",
+  storageBucket: "aaad-500-smiles.firebasestorage.app",
+  messagingSenderId: "92914278254",
+  appId: "1:92914278254:web:92aaed0871a91b45bb2b7f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const QUESTION_TIME = 20;
+const SHAPES = ['▲','◆','●','■'];
+
+const Q = [
+  { cat:'📵 Verslaving', q:'Hoeveel uur per dag zit een gemiddelde Nederlandse tiener (12–18 jaar) op sociaal media?', a:['Circa 1 uur','Circa 3 uur','Circa 5 uur','Circa 7 uur'], c:1, fact:'Nederlandse tieners zitten gemiddeld zo\'n 3 uur per dag op sociaal media.' },
+  { cat:'📵 Verslaving', q:'Welk hormoon wordt aangemaakt als je een like of reactie krijgt op sociaal media?', a:['Melatonine','Cortisol','Dopamine','Adrenaline'], c:2, fact:'Dopamine is het beloningshormoon. Likes en notificaties geven kleine dopamineboosts.' },
+  { cat:'📵 Verslaving', q:'Wat is doomscrolling?', a:['Berichten verwijderen uit verveling','Eindeloos negatief nieuws lezen op je telefoon','Iemand blokkeren op sociaal media','Een account aanmaken met een valse naam'], c:1, fact:'Doomscrolling is blijven scrollen door negatief nieuws, zelfs als je je er slechter door voelt.' },
+  { cat:'🪞 Misbeeld', q:'Hoeveel procent van de foto\'s op Instagram bevat een filter of bewerking?', a:['Circa 10%','Circa 30%','Circa 60%','Circa 80%'], c:3, fact:'Veel beelden op sociale media zijn bewerkt en geven daardoor geen realistisch beeld.' },
+  { cat:'😢 Cyberpesten', q:'Wat is de definitie van cyberpesten?', a:['Iemand uitschelden op school','Online of via telefoon iemand herhaaldelijk pesten of kwetsen','Te veel gamen op de computer','Foute berichten sturen naar een vreemde'], c:1, fact:'Cyberpesten is iemand herhaaldelijk online kwetsen, bedreigen of uitschelden.' },
+  { cat:'💡 Algemeen', q:'Vanaf welke leeftijd mag je officieel een account aanmaken op de meeste sociale media?', a:['10 jaar','13 jaar','16 jaar','18 jaar'], c:1, fact:'De meeste platforms hanteren 13 jaar als minimumleeftijd.' },
+  { cat:'💡 Algemeen', q:'Wat is een algoritme op sociale media?', a:['Een soort wachtwoord','Een computerprogramma dat bepaalt wat jij te zien krijgt','Een filter voor je foto\'s','Een manier om berichten te versleutelen'], c:1, fact:'Een algoritme kijkt naar gedrag en laat je daarna meer van hetzelfde zien.' },
+  { cat:'😂 Bonusvraag', q:'Je hebt net een uur gescrold terwijl je zei nog maar 5 minuten. Wat gebeurde er?', a:['Je klok liep fout','Het algoritme won','Je was super gedisciplineerd','Je telefoon besloot zelf te scrollen'], c:1, fact:'Apps zijn ontworpen om je aandacht zo lang mogelijk vast te houden.' }
+];
+
+const screens = ['home','lobby','game','end'];
+const els = {
+  homeError: document.getElementById('homeError'),
+  nameInput: document.getElementById('nameInput'),
+  roomInput: document.getElementById('roomInput'),
+  roomCodeLabel: document.getElementById('roomCodeLabel'),
+  lobbyRole: document.getElementById('lobbyRole'),
+  lobbyPlayers: document.getElementById('lobbyPlayers'),
+  lobbyStatus: document.getElementById('lobbyStatus'),
+  startGameBtn: document.getElementById('startGameBtn'),
+  playerBadge: document.getElementById('playerBadge'),
+  gameRoomCode: document.getElementById('gameRoomCode'),
+  questionNr: document.getElementById('questionNr'),
+  questionTotal: document.getElementById('questionTotal'),
+  timerText: document.getElementById('timerText'),
+  myScoreText: document.getElementById('myScoreText'),
+  catLabel: document.getElementById('catLabel'),
+  progFill: document.getElementById('progFill'),
+  questionText: document.getElementById('questionText'),
+  answersWrap: document.getElementById('answersWrap'),
+  feedbackText: document.getElementById('feedbackText'),
+  livePlayers: document.getElementById('livePlayers'),
+  finalPlayers: document.getElementById('finalPlayers')
+};
+
+let roomCode = '';
+let playerId = '';
+let playerName = '';
+let isHost = false;
+let roomUnsub = null;
+let playersUnsub = null;
+let timerInterval = null;
+let localAnsweredQuestion = -1;
+let revealTimeout = null;
+
+function show(screenId){
+  screens.forEach(id => document.getElementById(id).classList.toggle('on', id === screenId));
+}
+
+function escapeHtml(str=''){
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function makeCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+
+function makePlayerId(){
+  return 'p_' + Math.random().toString(36).slice(2,10);
+}
+
+function roomRef(){ return ref(db, `rooms/${roomCode}`); }
+function playersRef(){ return ref(db, `rooms/${roomCode}/players`); }
+function playerRef(){ return ref(db, `rooms/${roomCode}/players/${playerId}`); }
+function stateRef(){ return ref(db, `rooms/${roomCode}/state`); }
+
+function setHomeError(msg){  els.homeError.textContent = msg;  els.homeError.style.color = '#ff4d6d';  els.homeError.style.fontWeight = '800';}
+
+function renderLobbyHeader(){
+  els.roomCodeLabel.textContent = roomCode;
+  els.lobbyRole.textContent = isHost ? 'Jij bent de host. Jij start het spel.' : 'Wacht tot de host het spel start.';
+  els.startGameBtn.classList.toggle('hidden', !isHost);
+}
+
+function sortPlayers(playersObj){
+  return Object.entries(playersObj || {})
+    .map(([id, p]) => ({ id, ...p }))
+    .sort((a,b) => (b.score || 0) - (a.score || 0) || (a.joinedAt || 0) - (b.joinedAt || 0));
+}
+
+function renderPlayers(playersObj){
+  const players = sortPlayers(playersObj);
+
+  els.lobbyPlayers.innerHTML = players.map((p) => `
+    <div class="player-row">
+      <div><strong>${escapeHtml(p.name)}</strong> ${p.id === playerId ? '<span class="badge">jij</span>' : ''} ${p.isHost ? '<span class="badge">host</span>' : ''}</div>
+      <div>${p.score || 0}</div>
+    </div>
+  `).join('') || '<div class="small">Nog geen spelers.</div>';
+
+  els.lobbyStatus.textContent = `${players.length} speler(s) in de kamer.`;
+
+  const liveHtml = players.map((p, i) => `
+    <div class="player-row">
+      <div class="leader-name">${i===0 ? '👑 ' : ''}${escapeHtml(p.name)} ${p.id === playerId ? '<span class="badge">jij</span>' : ''}</div>
+      <div class="leader-score">${p.score || 0}</div>
+    </div>
+  `).join('');
+
+  els.livePlayers.innerHTML = liveHtml || '<div class="small">Nog geen scores.</div>';
+  els.finalPlayers.innerHTML = liveHtml || '<div class="small">Nog geen scores.</div>';
+
+  const me = players.find(p => p.id === playerId);
+  els.myScoreText.textContent = me?.score || 0;
+}
+
+function renderRoom(room){
+  const state = room.state || {};
+  els.gameRoomCode.textContent = roomCode;
+  els.playerBadge.textContent = playerName || 'Speler';
+  els.questionTotal.textContent = Q.length;
+
+  if(state.phase === 'lobby'){
+    renderLobbyHeader();
+    show('lobby');
+  } else if(state.phase === 'playing' || state.phase === 'reveal'){
+    show('game');
+    renderQuestion(state);
+  } else if(state.phase === 'finished'){
+    show('end');
+  }
+}
+
+function renderQuestion(state){
+  const idx = state.currentQuestion || 0;
+  const q = Q[idx];
+  if(!q) return;
+
+  els.questionNr.textContent = idx + 1;
+  els.catLabel.textContent = q.cat;
+  els.questionText.textContent = q.q;
+  els.progFill.style.width = `${(idx / Q.length) * 100}%`;
+
+  renderAnswers(q, state);
+  startLocalTimer(state);
+}
+
+function renderAnswers(q, state){
+  const alreadyAnswered = localAnsweredQuestion === state.currentQuestion;
+  const reveal = !!state.reveal || state.phase === 'reveal';
+
+  els.answersWrap.innerHTML = q.a.map((answer, index) => {
+    let cls = 'ans-btn';
+    if(reveal && index === q.c) cls += ' correct';
+    return `<button class="${cls}" data-index="${index}" ${alreadyAnswered || reveal ? 'disabled' : ''}><span style="margin-right:8px">${SHAPES[index]}</span>${escapeHtml(answer)}</button>`;
+  }).join('');
+
+  Array.from(els.answersWrap.querySelectorAll('.ans-btn')).forEach(btn => {
+    btn.addEventListener('click', () => submitAnswer(Number(btn.dataset.index)));
+  });
+
+  if(reveal){
+    els.feedbackText.textContent = '💡 ' + q.fact;
+  } else if(alreadyAnswered){
+    els.feedbackText.textContent = 'Antwoord opgeslagen. Wacht op de rest of de timer.';
+  } else {
+    els.feedbackText.textContent = 'Kies snel een antwoord. Hoe sneller goed, hoe meer punten.';
+  }
+}
+
+function startLocalTimer(state){
+  clearInterval(timerInterval);
+  const tick = () => {
+    const left = Math.max(0, Math.ceil(((state.questionEndsAt || 0) - Date.now()) / 1000));
+    els.timerText.textContent = left;
   };
+  tick();
+  timerInterval = setInterval(tick, 250);
+}
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+async function createRoom(){
+  try {
+    const name = els.nameInput.value.trim();
+    if(!name){
+      setHomeError('Vul eerst je naam in.');
+      return;
+    }
+
+    playerName = name;
+    playerId = makePlayerId();
+    isHost = true;
+    roomCode = makeCode();
+
+    await set(roomRef(), {
+      createdAt: Date.now(),
+      hostId: playerId,
+      state: {
+        phase: 'lobby',
+        currentQuestion: 0,
+        questionStartedAt: 0,
+        questionEndsAt: 0,
+        reveal: false,
+        started: false
+      }
+    });
+
+    await set(playerRef(), {
+      name: playerName,
+      score: 0,
+      joinedAt: Date.now(),
+      online: true,
+      isHost: true
+    });
+
+    await onDisconnect(playerRef()).remove();
+    startListeners();
+    show('lobby');
+    renderLobbyHeader();
+  } catch (err) {
+    setHomeError(String(err?.message || err));
+  }
+}
+
+async function joinRoom(){
+  try {
+    const name = els.nameInput.value.trim();
+    const code = els.roomInput.value.trim().toUpperCase();
+
+    if(!name){
+      setHomeError('Vul eerst je naam in.');
+      return;
+    }
+    if(code.length !== 6){
+      setHomeError('Voer een kamercode van 6 tekens in.');
+      return;
+    }
+
+    const snap = await get(ref(db, `rooms/${code}`));
+    if(!snap.exists()){
+      setHomeError('Deze kamer bestaat niet.');
+      return;
+    }
+
+    const room = snap.val();
+    if(room?.state?.phase === 'finished'){
+      setHomeError('Dit spel is al afgelopen. Maak een nieuwe kamer.');
+      return;
+    }
+
+    playerName = name;
+    playerId = makePlayerId();
+    roomCode = code;
+    isHost = false;
+
+    await set(playerRef(), {
+      name: playerName,
+      score: 0,
+      joinedAt: Date.now(),
+      online: true,
+      isHost: false
+    });
+
+    await onDisconnect(playerRef()).remove();
+    startListeners();
+    renderLobbyHeader();
+    show(room?.state?.started ? 'game' : 'lobby');
+  } catch (err) {
+    setHomeError(String(err?.message || err));
+  }
+}
+
+function stopListeners(){
+  if(roomUnsub) roomUnsub();
+  if(playersUnsub) playersUnsub();
+  roomUnsub = null;
+  playersUnsub = null;
+  clearInterval(timerInterval);
+  clearTimeout(revealTimeout);
+  timerInterval = null;
+  revealTimeout = null;
+}
+
+function cleanupAndGoHome(msg=''){
+  stopListeners();
+  roomCode = '';
+  playerId = '';
+  playerName = '';
+  isHost = false;
+  localAnsweredQuestion = -1;
+  els.roomInput.value = '';
+  els.homeError.textContent = msg;
+  show('home');
+}
+
+function startListeners(){
+  stopListeners();
+
+  roomUnsub = onValue(roomRef(), async (snap) => {
+    if(!snap.exists()){
+      cleanupAndGoHome('De kamer bestaat niet meer.');
+      return;
+    }
+    const room = snap.val();
+    renderRoom(room);
+    await maybeAdvanceGame(room);
+  });
+
+  playersUnsub = onValue(playersRef(), (snap) => {
+    renderPlayers(snap.val() || {});
+  });
+}
+
+async function submitAnswer(answerIndex){
+  const roomSnap = await get(roomRef());
+  const room = roomSnap.val();
+  const state = room?.state;
+
+  if(!state || state.phase !== 'playing') return;
+  if(localAnsweredQuestion === state.currentQuestion) return;
+
+  const now = Date.now();
+  const timeLeftMs = Math.max(0, (state.questionEndsAt || now) - now);
+  const points = answerIndex === Q[state.currentQuestion].c
+    ? Math.max(100, Math.ceil((timeLeftMs / 1000) * 50))
+    : 0;
+
+  await set(ref(db, `rooms/${roomCode}/answers/${state.currentQuestion}/${playerId}`), {
+    answer: answerIndex,
+    answeredAt: now,
+    points
+  });
+
+  localAnsweredQuestion = state.currentQuestion;
+  els.feedbackText.textContent = 'Antwoord opgeslagen. Wacht op de rest of de timer.';
+  renderAnswers(Q[state.currentQuestion], state);
+}
+
+async function scoreQuestion(questionIndex, answers, players){
+  const updates = {};
+  for(const [id, player] of Object.entries(players || {})){
+    const prev = player.score || 0;
+    const gained = answers?.[id]?.points || 0;
+    updates[`rooms/${roomCode}/players/${id}/score`] = prev + gained;
+  }
+  await update(ref(db), updates);
+}
+
+async function maybeAdvanceGame(room){
+  if(!isHost) return;
+
+  const state = room.state || {};
+  if(state.phase !== 'playing') return;
+
+  const idx = state.currentQuestion || 0;
+  const players = room.players || {};
+  const answers = room.answers?.[idx] || {};
+  const playerIds = Object.keys(players);
+  const allAnswered = playerIds.length > 0 && playerIds.every(id => !!answers[id]);
+  const timedOut = Date.now() >= (state.questionEndsAt || 0);
+
+  if(!state.reveal && (allAnswered || timedOut)){
+    await scoreQuestion(idx, answers, players);
+    await update(stateRef(), { reveal: true, phase: 'reveal' });
+
+    if(revealTimeout) clearTimeout(revealTimeout);
+    revealTimeout = setTimeout(async () => {
+      const nextIndex = idx + 1;
+      localAnsweredQuestion = -1;
+
+      if(nextIndex >= Q.length){
+        await update(stateRef(), { phase: 'finished', reveal: true });
+      } else {
+        const now = Date.now();
+        await update(stateRef(), {
+          phase: 'playing',
+          currentQuestion: nextIndex,
+          questionStartedAt: now,
+          questionEndsAt: now + QUESTION_TIME * 1000,
+          reveal: false
+        });
+      }
+    }, 3500);
+  }
+}
+
+async function startGame(){
+  const playersSnap = await get(playersRef());
+  const players = playersSnap.val() || {};
+  if(Object.keys(players).length < 1) return;
+
+  localAnsweredQuestion = -1;
+  const now = Date.now();
+
+  await update(stateRef(), {
+    phase: 'playing',
+    started: true,
+    currentQuestion: 0,
+    questionStartedAt: now,
+    questionEndsAt: now + QUESTION_TIME * 1000,
+    reveal: false
+  });
+}
+
+async function leaveRoom(){
+  try {
+    await remove(playerRef());
+  } catch {}
+  cleanupAndGoHome('');
+}
+
+document.getElementById('createBtn').addEventListener('click', createRoom);
+document.getElementById('joinBtn').addEventListener('click', joinRoom);
+document.getElementById('startGameBtn').addEventListener('click', startGame);
+document.getElementById('leaveLobbyBtn').addEventListener('click', leaveRoom);
+document.getElementById('playAgainBtn').addEventListener('click', () => cleanupAndGoHome(''));
+document.getElementById('copyCodeBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(roomCode);
+    els.lobbyStatus.textContent = `Code ${roomCode} gekopieerd.`;
+  } catch {
+    els.lobbyStatus.textContent = `Kopieer handmatig: ${roomCode}`;
+  }
+});
+
+els.roomInput.addEventListener('input', () => {
+  els.roomInput.value = els.roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+</script>
+</body>
+</html>
+does this work? if not tell me what to exactly change no extra info just tell me what to change.
