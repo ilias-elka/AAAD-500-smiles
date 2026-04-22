@@ -525,9 +525,10 @@ async function submitAnswer(answerIndex){
 
   const now = Date.now();
   const timeLeftMs = Math.max(0, (state.questionEndsAt || now) - now);
-  const points = answerIndex === Q[state.currentQuestion].c
-    ? Math.max(100, Math.ceil((timeLeftMs / 1000) * 50))
-    : 0;
+  const secondsLeft = Math.max(0, Math.floor(timeLeftMs / 1000));
+const points = answerIndex === Q[state.currentQuestion].c
+  ? secondsLeft * 10
+  : 0;
 
   await set(ref(db, `rooms/${roomCode}/answers/${state.currentQuestion}/${playerId}`), {
     answer: answerIndex,
@@ -550,6 +551,7 @@ async function scoreQuestion(questionIndex, answers, players){
   await update(ref(db), updates);
 }
 
+  if(state.phase === 'reveal') return;
 async function maybeAdvanceGame(room){
   if(!isHost) return;
 
@@ -560,7 +562,7 @@ async function maybeAdvanceGame(room){
   const players = room.players || {};
   const answers = room.answers?.[idx] || {};
   const playerIds = Object.keys(players);
-  const allAnswered = playerIds.length > 0 && playerIds.every(id => !!answers[id]);
+  const allAnswered = playerIds.length > 0 && playerIds.every(id => answers[id] !== undefined);
   const timedOut = Date.now() >= (state.questionEndsAt || 0);
 
   if(!state.reveal && (allAnswered || timedOut)){
