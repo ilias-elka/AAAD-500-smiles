@@ -394,12 +394,22 @@ async function createRoom(){
       isHost: true
     });
 
-    await onDisconnect(playerRef()).remove();
     startListeners();
-    show('lobby');
-    renderLobbyHeader();
+show('lobby');
+renderLobbyHeader();
+
+try {
+  await onDisconnect(playerRef()).remove();
+} catch (err) {
+  console.error(err);
+}
   } catch (err) {
-    setHomeError(String(err?.message || err));
+    function setHomeError(msg){
+  els.homeError.textContent = msg;
+  els.homeError.style.color = '#ff4d6d';
+  els.homeError.style.fontWeight = '800';
+  console.error(msg);
+}
   }
 }
 
