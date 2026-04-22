@@ -551,9 +551,9 @@ async function scoreQuestion(questionIndex, answers, players){
   await update(ref(db), updates);
 }
 
-  if(state.phase === 'reveal') return;
 async function maybeAdvanceGame(room){
   if(!isHost) return;
+  if(state.phase === 'reveal') return;
 
   const state = room.state || {};
   if(state.phase !== 'playing') return;
